@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_list/widget/new_item.dart';
 
 class NewItemScreen extends StatelessWidget {
   const NewItemScreen({super.key});
@@ -17,16 +18,8 @@ class NewItemScreen extends StatelessWidget {
         backgroundColor: Theme.of(context).copyWith().colorScheme.onPrimary,
       ),
       backgroundColor:
-          Theme.of(context).copyWith().colorScheme.onInverseSurface,
-      body: const Center(
-        child: Text(
-          'Add New Item',
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.white,
-          ),
-        ),
-      ),
+          Theme.of(context).copyWith().colorScheme.surface,
+      body: const NewItem(),
     );
   }
 }

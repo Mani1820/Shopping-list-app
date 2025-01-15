@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Theme.of(context).copyWith().colorScheme.onPrimary,
       ),
       backgroundColor:
-          Theme.of(context).copyWith().colorScheme.onInverseSurface,
+          Theme.of(context).copyWith().colorScheme.surface,
       body:const GroceryList(),
     );
   }

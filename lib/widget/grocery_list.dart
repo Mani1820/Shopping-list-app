@@ -10,7 +10,7 @@ class GroceryList extends StatelessWidget {
     final totalItems = groceryItems.length;
 
     return ListView.builder(
-      itemCount: totalItems, 
+      itemCount: totalItems,
       itemBuilder: (context, index) {
         return Padding(
           padding: const EdgeInsets.symmetric(
@@ -26,9 +26,12 @@ class GroceryList extends StatelessWidget {
               ),
             ),
             leading: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: groceryItems[index].category.color,
+              ),
               height: 25,
               width: 25,
-              color: groceryItems[index].category.color,
             ),
             trailing: Text(
               groceryItems[index].quantity.toString(),
