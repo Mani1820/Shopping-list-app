@@ -16,6 +16,8 @@ class GroceryList extends StatefulWidget {
 
 class _GroceryListState extends State<GroceryList> {
   List<GroceryItems> groceryItem = [];
+  var _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -28,7 +30,26 @@ class _GroceryListState extends State<GroceryList> {
       'shopping-list-6a723-default-rtdb.firebaseio.com',
       '/Shopping-List.json',
     );
+
     final response = await http.get(url);
+
+    
+    if (response.statusCode >= 400) {
+      setState(() {
+        _isLoading = false;
+        _error = 'Failed to load items, please try again later.';
+      });
+      return;
+    }
+
+    if (response.body == 'null') {
+      setState(() {
+        _isLoading = false;
+        groceryItem = [];
+      });
+      return;
+    }
+
     final Map<String, dynamic> listItems = json.decode(response.body);
 
     List<GroceryItems> loadedItems = [];
@@ -49,6 +70,7 @@ class _GroceryListState extends State<GroceryList> {
     setState(
       () {
         groceryItem = loadedItems;
+        _isLoading = false;
       },
     );
   }
@@ -67,25 +89,41 @@ class _GroceryListState extends State<GroceryList> {
     return;
   }
 
-  void _removeItem(GroceryItems item) {
+  void _removeItem(GroceryItems item) async {
+    final index = groceryItem.indexOf(item);
     setState(() {
       groceryItem.remove(item);
     });
+    final url = Uri.https(
+      'shopping-list-6a723-default-rtdb.firebaseio.com',
+      '/Shopping-List/${item.id}.json',
+    );
+    final response = await http.delete(url);
+    if (response.statusCode >= 400) {
+      setState(() {
+        groceryItem.insert(index, item);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final totalItems = groceryItem.length;
-    Widget content = const Center(
-      child: Text(
-        'No items added yet!',
-        style: TextStyle(
-          fontSize: 20,
-          color: Colors.white,
+    Widget content;
+
+    if (_isLoading) {
+      content = Center(child: CircularProgressIndicator());
+    } else if (groceryItem.isEmpty) {
+      content = Center(
+        child: Text(
+          'No items added yet!',
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+          ),
         ),
-      ),
-    );
-    if (groceryItem.isNotEmpty) {
+      );
+    } else {
       content = ListView.builder(
         itemCount: totalItems,
         itemBuilder: (context, index) {
@@ -125,6 +163,18 @@ class _GroceryListState extends State<GroceryList> {
             ),
           );
         },
+      );
+    }
+
+    if (_error != null) {
+      content = Center(
+        child: Text(
+          _error!,
+          style: const TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+          ),
+        ),
       );
     }
 
