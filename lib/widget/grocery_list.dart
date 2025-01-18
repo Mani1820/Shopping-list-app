@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:shopping_list/data/categories.dart';
 
 import 'package:shopping_list/models/grocery.dart';
 import 'package:shopping_list/screens/new_item_screen.dart';
@@ -11,19 +15,56 @@ class GroceryList extends StatefulWidget {
 }
 
 class _GroceryListState extends State<GroceryList> {
-  final List<GroceryItems> groceryItem = [];
+  List<GroceryItems> groceryItem = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadItems();
+  }
+
+  void loadItems() async {
+    final url = Uri.https(
+      'shopping-list-6a723-default-rtdb.firebaseio.com',
+      '/Shopping-List.json',
+    );
+    final response = await http.get(url);
+    final Map<String, dynamic> listItems = json.decode(response.body);
+
+    List<GroceryItems> loadedItems = [];
+
+    for (final item in listItems.entries) {
+      final category = categories.entries
+          .firstWhere((element) => element.value.name == item.value['category'])
+          .value;
+      loadedItems.add(
+        GroceryItems(
+          id: item.key,
+          name: item.value['name'],
+          quantity: item.value['quantity'],
+          category: category,
+        ),
+      );
+    }
+    setState(
+      () {
+        groceryItem = loadedItems;
+      },
+    );
+  }
+
   void _addNewItem(BuildContext context) async {
     final newItem = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const NewItemScreen(),
       ),
     );
-    if (newItem == null) {
-      return;
+    if (newItem != null) {
+      setState(() {
+        groceryItem.add(newItem);
+      });
     }
-    setState(() {
-      groceryItem.add(newItem);
-    });
+    return;
   }
 
   void _removeItem(GroceryItems item) {
@@ -34,7 +75,6 @@ class _GroceryListState extends State<GroceryList> {
 
   @override
   Widget build(BuildContext context) {
-   
     final totalItems = groceryItem.length;
     Widget content = const Center(
       child: Text(
